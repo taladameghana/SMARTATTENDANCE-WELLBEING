@@ -1,25 +1,18 @@
 from fastapi import APIRouter, File, UploadFile
-import mediapipe as mp
-import numpy as np
-from PIL import Image
-import io
+import shutil
+import os
 
-router = APIRouter()
+router = APIRouter(prefix="/process", tags=["Image Processing"])
 
-mp_face = mp.solutions.face_detection
+UPLOAD_FOLDER = "datasets/sample_uploads"
 
-@router.post("/image")
-async def process_image(file: UploadFile = File(...)):
-    image_bytes = await file.read()
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    image_np = np.array(image)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-    with mp_face.FaceDetection(model_selection=0, min_detection_confidence=0.5) as detector:
-        results = detector.process(image_np)
-
-    faces_count = 0
-    if results.detections:
-        faces_count = len(results.detections)
-
-    return {"faces_detected": faces_count}
-
+@router.post("/upload/")
+def upload_image(file: UploadFile = File(...)):
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    # Here you can call your AI modules for face recognition or stress detection
+    return {"filename": file.filename, "status": "uploaded"}

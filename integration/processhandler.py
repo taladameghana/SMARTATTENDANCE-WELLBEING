@@ -1,16 +1,23 @@
-from ai_modules.face_recognition.detector import detect_faces
-from ai_modules.emotion_stress.emotion_model import predict_emotion
-from ai_modules.emotion_stress.stress_logic import get_stress_level
+from integration.api_connector import mark_attendance, add_stress, upload_image
+from ai_modules.face_recognition.recognizer import recognize_face
+from ai_modules.emotion_stress.stress_logic import estimate_stress
 
-def handle_frame(image_np):
-    faces = detect_faces(image_np)
-    output = []
+def process_student_image(image_path: str):
+    # Step 1: Upload image
+    upload_response = upload_image(image_path)
+    print("Upload Response:", upload_response)
 
-    if faces:
-        for _ in faces:
-            emotion = predict_emotion(None)
-            stress = get_stress_level(emotion)
-            output.append({"emotion": emotion, "stress": stress})
+    # Step 2: Recognize student
+    student_id = recognize_face(image_path)  # your AI module should return student ID
+    if not student_id:
+        print("Student not recognized")
+        return
 
-    return output
+    # Step 3: Mark attendance
+    attendance_resp = mark_attendance(student_id)
+    print("Attendance Response:", attendance_resp)
 
+    # Step 4: Estimate stress from image
+    stress_score = estimate_stress(image_path)
+    stress_resp = add_stress(student_id, stress_score)
+    print("Stress Response:", stress_resp)

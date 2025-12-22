@@ -1,23 +1,49 @@
+import os
 import requests
 
-API_BASE = "http://127.0.0.1:8000"
+# Read API key securely
+API_KEY = os.getenv("AI_API_KEY")
 
-def mark_attendance(student_id: int, present: bool = True):
-    url = f"{API_BASE}/attendance/"
-    payload = {"student_id": student_id, "present": present}
-    response = requests.post(url, json=payload)
-    return response.json()
+# Example external API endpoints (replace with your real one)
+EMOTION_API_URL = "https://api.example.com/emotion"
+FACE_API_URL = "https://api.example.com/face-recognition"
 
-def add_stress(student_id: int, stress_score: float):
-    url = f"{API_BASE}/stress/"
-    payload = {"student_id": student_id, "stress_score": stress_score}
-    response = requests.post(url, json=payload)
-    return response.json()
 
-def upload_image(file_path: str):
-    url = f"{API_BASE}/process/upload/"
-    with open(file_path, "rb") as f:
-        files = {"file": f}
-        response = requests.post(url, files=files)
-    return response.json()
+class APIConnector:
+    def __init__(self):
+        if not API_KEY:
+            raise ValueError("API key not found. Set AI_API_KEY in environment variables")
 
+        self.headers = {
+            "Authorization": f"Bearer {API_KEY}"
+        }
+
+    def call_emotion_api(self, image_path: str):
+        """Send image to emotion / stress API"""
+        with open(image_path, "rb") as img:
+            files = {"file": img}
+            response = requests.post(
+                EMOTION_API_URL,
+                headers=self.headers,
+                files=files
+            )
+
+        if response.status_code != 200:
+            raise Exception("Emotion API failed")
+
+        return response.json()
+
+    def call_face_api(self, image_path: str):
+        """Send image to face recognition API"""
+        with open(image_path, "rb") as img:
+            files = {"file": img}
+            response = requests.post(
+                FACE_API_URL,
+                headers=self.headers,
+                files=files
+            )
+
+        if response.status_code != 200:
+            raise Exception("Face Recognition API failed")
+
+        return response.json()

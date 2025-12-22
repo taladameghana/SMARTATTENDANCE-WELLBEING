@@ -20,4 +20,4 @@ def process_student_image(image_path: str):
     # Step 4: Estimate stress from image
     stress_score = estimate_stress(image_path)
     stress_resp = add_stress(student_id, stress_score)
-    print("Stress Response:", stress_resp)
+    print("Stress Response:", stress_resp) 

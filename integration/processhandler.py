@@ -1,23 +1,47 @@
-from integration.api_connector import mark_attendance, add_stress, upload_image
+from integration.apiconnector import APIConnector
+
+# Optional: local AI modules
 from ai_modules.face_recognition.recognizer import recognize_face
-from ai_modules.emotion_stress.stress_logic import estimate_stress
+from ai_modules.emotion_stress.stress_logic import calculate_stress
 
-def process_student_image(image_path: str):
-    # Step 1: Upload image
-    upload_response = upload_image(image_path)
-    print("Upload Response:", upload_response)
 
-    # Step 2: Recognize student
-    student_id = recognize_face(image_path)  # your AI module should return student ID
-    if not student_id:
-        print("Student not recognized")
-        return
+class ProcessHandler:
+    def __init__(self):
+        self.api = APIConnector()
 
-    # Step 3: Mark attendance
-    attendance_resp = mark_attendance(student_id)
-    print("Attendance Response:", attendance_resp)
+    def process_attendance(self, image_path: str):
+        """
+        1. Recognize student face
+        2. Mark attendance
+        """
 
-    # Step 4: Estimate stress from image
-    stress_score = estimate_stress(image_path)
-    stress_resp = add_stress(student_id, stress_score)
-    print("Stress Response:", stress_resp) 
+        # Option A: Local AI
+        student_name = recognize_face(image_path)
+
+        # Option B: External API
+        # response = self.api.call_face_api(image_path)
+        # student_name = response.get("name")
+
+        return {
+            "student_name": student_name,
+            "status": "Present"
+        }
+
+    def process_stress(self, image_path: str):
+        """
+        1. Detect emotion
+        2. Convert emotion → stress level
+        """
+
+        # Option A: External API
+        response = self.api.call_emotion_api(image_path)
+        emotion = response.get("emotion")
+
+        # Option B: Local logic
+        stress_level = calculate_stress(emotion)
+
+        return {
+            "emotion": emotion,
+            "stress_level": stress_level
+        }
+

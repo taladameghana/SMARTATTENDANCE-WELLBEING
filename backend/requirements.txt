@@ -1,8 +1,12 @@
 fastapi
 uvicorn
 sqlalchemy
-numpy
+pydantic
+databases
 python-multipart
-mediapipe
-pillow
-
+opencv-python
+numpy
+face-recognition
+tensorflow
+torch
+Pillow

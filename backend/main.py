@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from backend.database import Base, engine
-from backend.routers import attendance_routes, stress_routes, process_image
+from database import Base, engine
+from routers import attendance_routes, stress_routes, process_image
 
 # Create tables
 Base.metadata.create_all(bind=engine)
